@@ -1,31 +1,27 @@
-from flask import Flask, render_template, request
-import pandas as pd
-from sklearn.cluster import KMeans
-from sklearn.preprocessing import StandardScaler
-
-app = Flask(__name__)
-data = pd.read_csv('c:\Users\Sarvu\Desktop\UG PHASE-1\CC GENERAL.csv')
-
+import numpy as np
+from flask import Flask, request, render_template,jsonify
+import pickle
+app=Flask(__name__)
+model=pickle.load(open("training files\model.pkl",'rb'))
 @app.route('/')
-def index():
-    return render_template('index.html')
-
-@app.route('/segment', methods=['POST'])
-def segment():
-    # Get data from the form
-    data = request.form['data']
-
-    # Process data (perform clustering)
-    # Here you'll use your clustering algorithm
-    # This is just a placeholder
-    processed_data = process_data(data)
-
-    return render_template('segment.html', result=processed_data)
-
-def process_data(data):
-    # Dummy function for data processing
-    return data
-
-if __name__ == '__main__':
-    app.run(debug=True)
-
+@app.route('/home',methods=['GET','POST'])
+def home():
+ return render_template('home.html')
+@app.route('/about',methods=['GET','POST'])
+def about():
+ return render_template('about.html')
+@app.route('/findingchurner',methods=['GET','POST'])
+def findingchurner():
+ return render_template('findingchurner.html')
+@app.route('/predict', methods=['GET','POST'])
+def predict():
+ int_features = [int(x) for x in request.form.values()]
+ features=[np.array(int_features)]
+ prediction=model.predict(features)
+ label_mapping = {0: 'low', 1: 'very low', 2: 'high', 3: 'very high'}
+ predicted_label = label_mapping[prediction[0]]
+ output = predicted_label
+ return render_template('findingchurner.html',prediction_text='The chance of churn based on given customer info is {}'.format(output))
+ #return jsonify(prediction_text = output)
+if __name__=="__main__":
+  app.run(debug=True)
